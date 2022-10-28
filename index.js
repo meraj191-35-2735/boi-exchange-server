@@ -39,8 +39,8 @@ async function run() {
     await client.connect();
 
     const bookCollection = client.db("boi_exchange").collection("books");
-    const userCollection = client.db("boi-exchange").collection("users");
-    console.log(userCollection)
+    const userCollection = client.db("boi_exchange").collection("users");
+    console.log(userCollection);
 
     app.get("/books", async (req, res) => {
       const query = {};
@@ -104,10 +104,9 @@ async function run() {
 
     app.get("/admin/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
       const user = await userCollection.findOne({ email: email });
       console.log(user);
-      const isAdmin = user.role === "admin";
+      const isAdmin = user?.role === "admin";
       res.send({ admin: isAdmin });
     });
   } finally {
