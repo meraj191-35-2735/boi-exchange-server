@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const ObjectId = require("mongodb").ObjectId;
 const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion } = require("mongodb");
+const { query } = require("express");
 require("dotenv").config();
 
 const port = process.env.PORT || 5000;
@@ -40,11 +41,18 @@ async function run() {
 
     const bookCollection = client.db("boi_exchange").collection("books");
     const userCollection = client.db("boi_exchange").collection("users");
-    console.log(userCollection);
+    const exchangeCollection = client.db("boi_exchange").collection("exchange");
 
     app.get("/books", async (req, res) => {
       const query = {};
       const cursor = bookCollection.find(query);
+      const books = await cursor.toArray();
+      res.send(books);
+    });
+
+    app.get("/exchange", async (req, res) => {
+      const query = {};
+      const cursor = exchangeCollection.find(query);
       const books = await cursor.toArray();
       res.send(books);
     });
@@ -115,9 +123,9 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("Server is Running");
+  res.send("Boi Exchange Server is Running");
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Boi Exchange Web listening on port ${port}`);
 });
