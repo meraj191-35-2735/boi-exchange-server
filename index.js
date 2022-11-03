@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const ObjectId = require("mongodb").ObjectId;
 const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion } = require("mongodb");
-const { query } = require("express");
+const { query, response } = require("express");
 require("dotenv").config();
 
 const port = process.env.PORT || 5000;
@@ -42,6 +42,7 @@ async function run() {
     const bookCollection = client.db("boi_exchange").collection("books");
     const userCollection = client.db("boi_exchange").collection("users");
     const exchangeCollection = client.db("boi_exchange").collection("exchange");
+    const borrowCollection = client.db("boi_exchange").collection("borrow");
 
     app.get("/books", async (req, res) => {
       const query = {};
@@ -59,12 +60,12 @@ async function run() {
 
     app.put("/exchange/:id", async (req, res) => {
       const id = req.params.id;
-      const requesterDetails = req.body;
+      const requester = req.body;
       const filter = { _id: ObjectId(id) };
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
-          requesterDetails: requesterDetails,
+          requesterDetails: requester,
         },
       };
       const result = await exchangeCollection.updateOne(
@@ -73,6 +74,22 @@ async function run() {
         options
       );
       res.send(result);
+    });
+
+    // app.get("/exchange/:email", async (req, res) => {
+    //   const email = req.params.email;
+
+    //   if (dbEmail) {
+    //     const cursor = exchangeCollection.find({ requesterDetails: true });
+    //     console.log(cursor);
+    //   }
+    // });
+
+    app.get("/borrow", async (req, res) => {
+      const query = {};
+      const cursor = borrowCollection.find(query);
+      const books = await cursor.toArray();
+      res.send(books);
     });
 
     app.get("/book/:id", async (req, res) => {
