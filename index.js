@@ -57,6 +57,24 @@ async function run() {
       res.send(books);
     });
 
+    app.put("/exchange/:id", async (req, res) => {
+      const id = req.params.id;
+      const requesterDetails = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          requesterDetails: requesterDetails,
+        },
+      };
+      const result = await exchangeCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
     app.get("/book/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -81,7 +99,7 @@ async function run() {
       const token = jwt.sign(
         { email: email },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "23h" }
       );
       res.send({ result, token });
     });
