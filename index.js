@@ -20,6 +20,7 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
+
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -58,6 +59,14 @@ async function run() {
       res.send(books);
     });
 
+    app.get("/exchange/:mail", async (req, res) => {
+      const email = req?.params?.mail;
+      const query = { userEmail: email };
+      const cursor = exchangeCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.put("/exchange/:id", async (req, res) => {
       const id = req.params.id;
       const requester = req.body;
@@ -90,6 +99,14 @@ async function run() {
       const cursor = borrowCollection.find(query);
       const books = await cursor.toArray();
       res.send(books);
+    });
+
+    app.get("/borrow/:mail", async (req, res) => {
+      const email = req?.params?.mail;
+      const query = { userEmail: email };
+      const cursor = borrowCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
     });
 
     app.get("/book/:id", async (req, res) => {
