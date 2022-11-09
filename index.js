@@ -85,15 +85,6 @@ async function run() {
       res.send(result);
     });
 
-    // app.get("/exchange/:email", async (req, res) => {
-    //   const email = req.params.email;
-
-    //   if (dbEmail) {
-    //     const cursor = exchangeCollection.find({ requesterDetails: true });
-    //     console.log(cursor);
-    //   }
-    // });
-
     app.get("/borrow", async (req, res) => {
       const query = {};
       const cursor = borrowCollection.find(query);
@@ -106,6 +97,24 @@ async function run() {
       const query = { userEmail: email };
       const cursor = borrowCollection.find(query);
       const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.put("/borrow/:id", async (req, res) => {
+      const id = req.params.id;
+      const requester = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          requesterDetails: requester,
+        },
+      };
+      const result = await borrowCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
       res.send(result);
     });
 
