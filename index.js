@@ -7,20 +7,16 @@ const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const { query, response } = require("express");
 require("dotenv").config();
-
 const port = process.env.PORT || 5000;
-
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.rhgolmx.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -35,15 +31,17 @@ function verifyJWT(req, res, next) {
     next();
   });
 }
-
 async function run() {
   try {
     await client.connect();
-
     const bookCollection = client.db("boi_exchange").collection("books");
     const userCollection = client.db("boi_exchange").collection("users");
     const exchangeCollection = client.db("boi_exchange").collection("exchange");
     const borrowCollection = client.db("boi_exchange").collection("borrow");
+
+    //**********************
+    //       Exchange
+    //**********************
 
     //All available books for exchange
     app.get("/exchange", async (req, res) => {
@@ -52,7 +50,6 @@ async function run() {
       const books = await cursor.toArray();
       res.send(books);
     });
-
     //My Added Books for exchange
     app.get("/exchange/:mail", async (req, res) => {
       const email = req.params.mail;
@@ -61,7 +58,6 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
-
     // Acceptance Page for exchange
     app.get("/exchange/book/:bookId", async (req, res) => {
       const id = req.params.bookId;
@@ -69,7 +65,6 @@ async function run() {
       const result = await exchangeCollection.findOne(query);
       res.send(result);
     });
-
     // Send Request for exchange
     app.put("/exchange/:id", async (req, res) => {
       const id = req.params.id;
@@ -88,7 +83,6 @@ async function run() {
       );
       res.send(result);
     });
-
     //Acceptance Result for exchange
     app.put("/exchange/accept/:id", async (req, res) => {
       const id = req.params.id;
@@ -111,7 +105,6 @@ async function run() {
       );
       res.send(result);
     });
-
     //Rejection Result for exchange
     app.put("/exchange/reject/:id", async (req, res) => {
       const id = req.params.id;
@@ -135,13 +128,18 @@ async function run() {
       res.send(result);
     });
 
+    //**********************
+    //       Borrow
+    //**********************
+
+    //All available books for exchange
     app.get("/borrow", async (req, res) => {
       const query = {};
       const cursor = borrowCollection.find(query);
       const books = await cursor.toArray();
       res.send(books);
     });
-
+    //My Added Books for Borrow
     app.get("/borrow/:mail", async (req, res) => {
       const email = req.params.mail;
       const query = { userEmail: email };
@@ -149,7 +147,14 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
-
+    // Acceptance Page for Borrow
+    app.get("/borrow/book/:bookId", async (req, res) => {
+      const id = req.params.bookId;
+      const query = { _id: ObjectId(id) };
+      const result = await borrowCollection.findOne(query);
+      res.send(result);
+    });
+    // Send Request for Borrow
     app.put("/borrow/:id", async (req, res) => {
       const id = req.params.id;
       const requester = req.body;
@@ -167,7 +172,28 @@ async function run() {
       );
       res.send(result);
     });
-
+    //Acceptance Result for exchange
+    app.put("/borrow/accept/:id", async (req, res) => {
+      const id = req.params.id;
+      const requester = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          requestResult: requester,
+          accept: true,
+        },
+        $unset: {
+          requesterDetails: null,
+        },
+      };
+      const result = await borrowCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
     //Rejection Result for Borrow
     app.put("/borrow/reject/:id", async (req, res) => {
       const id = req.params.id;
@@ -191,6 +217,10 @@ async function run() {
       res.send(result);
     });
 
+    //**********************
+    //   Books - Store
+    //**********************
+
     app.get("/books", async (req, res) => {
       const query = {};
       const cursor = bookCollection.find(query);
@@ -204,6 +234,10 @@ async function run() {
       const result = await bookCollection.findOne(query);
       res.send(result);
     });
+
+    //************************
+    //User - Admin - Librarian
+    //************************
 
     app.get("/user", verifyJWT, async (req, res) => {
       const users = await userCollection.find().toArray();
