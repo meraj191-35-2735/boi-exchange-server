@@ -45,13 +45,7 @@ async function run() {
     const exchangeCollection = client.db("boi_exchange").collection("exchange");
     const borrowCollection = client.db("boi_exchange").collection("borrow");
 
-    app.get("/books", async (req, res) => {
-      const query = {};
-      const cursor = bookCollection.find(query);
-      const books = await cursor.toArray();
-      res.send(books);
-    });
-
+    //All available books for exchange
     app.get("/exchange", async (req, res) => {
       const query = {};
       const cursor = exchangeCollection.find(query);
@@ -59,14 +53,24 @@ async function run() {
       res.send(books);
     });
 
+    //My Added Books for exchange
     app.get("/exchange/:mail", async (req, res) => {
-      const email = req?.params?.mail;
+      const email = req.params.mail;
       const query = { userEmail: email };
       const cursor = exchangeCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
 
+    // Acceptance Page for exchange
+    app.get("/exchange/book/:bookId", async (req, res) => {
+      const id = req.params.bookId;
+      const query = { _id: ObjectId(id) };
+      const result = await exchangeCollection.findOne(query);
+      res.send(result);
+    });
+
+    // Send Request for exchange
     app.put("/exchange/:id", async (req, res) => {
       const id = req.params.id;
       const requester = req.body;
@@ -85,6 +89,26 @@ async function run() {
       res.send(result);
     });
 
+    //Acceptance Result for exchange
+    app.put("/exchange/accept/:id", async (req, res) => {
+      const id = req.params.id;
+      const requester = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          requestResult: requester,
+          accept: true,
+        },
+      };
+      const result = await exchangeCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
     app.get("/borrow", async (req, res) => {
       const query = {};
       const cursor = borrowCollection.find(query);
@@ -93,7 +117,7 @@ async function run() {
     });
 
     app.get("/borrow/:mail", async (req, res) => {
-      const email = req?.params?.mail;
+      const email = req.params.mail;
       const query = { userEmail: email };
       const cursor = borrowCollection.find(query);
       const result = await cursor.toArray();
@@ -116,6 +140,13 @@ async function run() {
         options
       );
       res.send(result);
+    });
+
+    app.get("/books", async (req, res) => {
+      const query = {};
+      const cursor = bookCollection.find(query);
+      const books = await cursor.toArray();
+      res.send(books);
     });
 
     app.get("/book/:id", async (req, res) => {
@@ -142,7 +173,7 @@ async function run() {
       const token = jwt.sign(
         { email: email },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "23h" }
+        { expiresIn: "1h" }
       );
       res.send({ result, token });
     });
