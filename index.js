@@ -100,6 +100,32 @@ async function run() {
           requestResult: requester,
           accept: true,
         },
+        $unset: {
+          requesterDetails: null,
+        },
+      };
+      const result = await exchangeCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    //Rejection Result for exchange
+    app.put("/exchange/reject/:id", async (req, res) => {
+      const id = req.params.id;
+      const requester = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          requestResult: requester,
+          accept: false,
+        },
+        $unset: {
+          requesterDetails: null,
+        },
       };
       const result = await exchangeCollection.updateOne(
         filter,
@@ -132,6 +158,29 @@ async function run() {
       const updatedDoc = {
         $set: {
           requesterDetails: requester,
+        },
+      };
+      const result = await borrowCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    //Rejection Result for Borrow
+    app.put("/borrow/reject/:id", async (req, res) => {
+      const id = req.params.id;
+      const requester = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          requestResult: requester,
+          accept: false,
+        },
+        $unset: {
+          requesterDetails: null,
         },
       };
       const result = await borrowCollection.updateOne(
