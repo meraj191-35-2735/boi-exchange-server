@@ -11,6 +11,8 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
+
+// database connect
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.rhgolmx.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -49,6 +51,23 @@ async function run() {
       const cursor = exchangeCollection.find(query);
       const books = await cursor.toArray();
       res.send(books);
+    });
+    // Add book to Exchange
+    app.post("/exchange", async (req, res) => {
+      const book = req.body;
+      const query = {
+        name: book.name,
+        category: book.category,
+        writter: book.writter,
+        image: book.image,
+        interestedBooksType: book.interestedBooksType,
+        userName: book.userName,
+        userEmail: book.userEmail,
+        userLocation: book.userLocation,
+        userContact: book.userContact,
+      };
+      const result = await exchangeCollection.insertOne(query);
+      res.send(result);
     });
     //My Added Books for exchange
     app.get("/exchange/:mail", async (req, res) => {
@@ -138,6 +157,23 @@ async function run() {
       const cursor = borrowCollection.find(query);
       const books = await cursor.toArray();
       res.send(books);
+    });
+    //Add Book to Borrow
+    app.post("/borrow", async (req, res) => {
+      const book = req.body;
+      const query = {
+        name: book.name,
+        category: book.category,
+        writter: book.writter,
+        image: book.image,
+        duration: book.duration,
+        userName: book.userName,
+        userEmail: book.userEmail,
+        userLocation: book.userLocation,
+        userContact: book.userContact,
+      };
+      const result = await borrowCollection.insertOne(query);
+      res.send(result);
     });
     //My Added Books for Borrow
     app.get("/borrow/:mail", async (req, res) => {
@@ -256,7 +292,7 @@ async function run() {
       const token = jwt.sign(
         { email: email },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "1d" }
       );
       res.send({ result, token });
     });
