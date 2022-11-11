@@ -289,7 +289,7 @@ async function run() {
     //User - Admin - Librarian
     //************************
 
-    app.get("/user", verifyJWT, async (req, res) => {
+    app.get("/user", async (req, res) => {
       const users = await userCollection.find().toArray();
       res.send(users);
     });
@@ -316,7 +316,7 @@ async function run() {
       const user = await userCollection.findOne({ email: email });
       res.send(user);
     });
-
+    // Add Admin
     app.put("/user/admin/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
       const requester = req.decoded.email;
@@ -327,6 +327,60 @@ async function run() {
         const filter = { email: email };
         const updateDoc = {
           $set: { role: "admin" },
+        };
+        const result = await userCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      } else {
+        res.status(403).send({ message: "FORBIDDEN Access" });
+      }
+    });
+    // Add Librarian
+    app.put("/user/librarian/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const requester = req.decoded.email;
+      const requesterAccount = await userCollection.findOne({
+        email: requester,
+      });
+      if (requesterAccount.role === "admin") {
+        const filter = { email: email };
+        const updateDoc = {
+          $set: { role: "librarian" },
+        };
+        const result = await userCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      } else {
+        res.status(403).send({ message: "FORBIDDEN Access" });
+      }
+    });
+    // Remove Admin
+    app.put("/user/removeAdmin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const requester = req.decoded.email;
+      const requesterAccount = await userCollection.findOne({
+        email: requester,
+      });
+      if (requesterAccount.role === "admin") {
+        const filter = { email: email };
+        const updateDoc = {
+          $unset: { role: "" },
+        };
+        const result = await userCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      } else {
+        res.status(403).send({ message: "FORBIDDEN Access" });
+      }
+    });
+    // Remove Librarian
+    app.put("/user/removeLibrarian/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const requester = req.decoded.email;
+      const requesterAccount = await userCollection.findOne({
+        email: requester,
+      });
+      if (requesterAccount.role === "admin") {
+        const filter = { email: email };
+        const updateDoc = {
+          $unset: { role: "" },
         };
         const result = await userCollection.updateOne(filter, updateDoc);
         res.send(result);
