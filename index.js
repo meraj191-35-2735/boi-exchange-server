@@ -270,18 +270,38 @@ async function run() {
     //**********************
     //   Books - Store
     //**********************
-
+    // Get All books
     app.get("/books", async (req, res) => {
       const query = {};
       const cursor = bookCollection.find(query);
       const books = await cursor.toArray();
       res.send(books);
     });
-
+    // Get specific book
     app.get("/book/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await bookCollection.findOne(query);
+      res.send(result);
+    });
+    // Delete specific book
+    app.delete("/book/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await bookCollection.deleteOne(query);
+      res.send(result);
+    });
+    //Add Book to Store
+    app.post("/book", async (req, res) => {
+      const book = req.body;
+      const query = {
+        name: book.name,
+        category: book.category,
+        writter: book.writter,
+        image: book.image,
+        price: book.price,
+      };
+      const result = await bookCollection.insertOne(query);
       res.send(result);
     });
 
