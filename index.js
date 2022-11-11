@@ -146,6 +146,13 @@ async function run() {
       );
       res.send(result);
     });
+    //Delete Book from Exchange
+    app.delete("/exchange/book/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await exchangeCollection.deleteOne(query);
+      res.send(result);
+    });
 
     //**********************
     //       Borrow
@@ -250,6 +257,13 @@ async function run() {
         updatedDoc,
         options
       );
+      res.send(result);
+    });
+    //Delete Book from Borrow
+    app.delete("/borrow/book/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await borrowCollection.deleteOne(query);
       res.send(result);
     });
 
