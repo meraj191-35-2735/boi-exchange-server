@@ -19,6 +19,7 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
+// verify User with token 
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -309,11 +310,12 @@ async function run() {
     //User - Admin - Librarian
     //************************
 
+    // Get All User Information
     app.get("/user", async (req, res) => {
       const users = await userCollection.find().toArray();
       res.send(users);
     });
-
+    //Update User Profile
     app.put("/user/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
@@ -330,7 +332,7 @@ async function run() {
       );
       res.send({ result, token });
     });
-
+    // Get Specific User Information
     app.get("/user/:email", async (req, res) => {
       const email = req.params.email;
       const user = await userCollection.findOne({ email: email });
@@ -408,7 +410,7 @@ async function run() {
         res.status(403).send({ message: "FORBIDDEN Access" });
       }
     });
-
+    //Check Admin Role for UseAdmin Hook
     app.get("/admin/:email", async (req, res) => {
       const email = req.params.email;
       const user = await userCollection.findOne({ email: email });
