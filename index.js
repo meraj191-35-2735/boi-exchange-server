@@ -19,7 +19,7 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-// verify User with token 
+// verify User with token
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -416,6 +416,13 @@ async function run() {
       const user = await userCollection.findOne({ email: email });
       const isAdmin = user?.role === "admin";
       res.send({ admin: isAdmin });
+    });
+    //Check Librarian Role for UseLibrarian Hook
+    app.get("/librarian/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne({ email: email });
+      const isLibrarian = user?.role === "librarian";
+      res.send({ librarian: isLibrarian });
     });
   } finally {
   }
