@@ -111,7 +111,9 @@ async function run() {
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
-          requestResult: requester,
+          requesterEmail: requester.requesterEmail,
+          message: requester.message,
+          dateAndTime: requester.dateAndTime,
           accept: true,
         },
         $unset: {
@@ -133,7 +135,7 @@ async function run() {
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
-          requestResult: requester,
+          requesterEmail: requester.requesterEmail,
           accept: false,
         },
         $unset: {
@@ -152,6 +154,14 @@ async function run() {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await exchangeCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.get("/exchange/result/:mail", async (req, res) => {
+      const email = req.params.mail;
+      const query = { requesterEmail: email };
+      const cursor = exchangeCollection.find(query);
+      const result = await cursor.toArray();
       res.send(result);
     });
 
@@ -224,7 +234,9 @@ async function run() {
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
-          requestResult: requester,
+          requesterEmail: requester.requesterEmail,
+          message: requester.message,
+          dateAndTime: requester.dateAndTime,
           accept: true,
         },
         $unset: {
@@ -246,7 +258,7 @@ async function run() {
       const options = { upsert: true };
       const updatedDoc = {
         $set: {
-          requestResult: requester,
+          requesterEmail: requester.requesterEmail,
           accept: false,
         },
         $unset: {
