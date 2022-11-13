@@ -157,7 +157,7 @@ async function run() {
       const result = await exchangeCollection.deleteOne(query);
       res.send(result);
     });
-
+    // Get Acceptance Result for exchange
     app.get("/exchange/result/:mail", async (req, res) => {
       const email = req.params.mail;
       const query = { requesterEmail: email };
@@ -279,6 +279,14 @@ async function run() {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await borrowCollection.deleteOne(query);
+      res.send(result);
+    });
+    // Get Acceptance Result for exchange
+    app.get("/borrow/result/:mail", async (req, res) => {
+      const email = req.params.mail;
+      const query = { requesterEmail: email };
+      const cursor = borrowCollection.find(query);
+      const result = await cursor.toArray();
       res.send(result);
     });
 
