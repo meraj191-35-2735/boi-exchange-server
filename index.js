@@ -310,6 +310,27 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+    //Rejection Result for borrow
+    app.put("/borrow/cancel/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $unset: {
+          accept: null,
+          date: null,
+          message: null,
+          requesterEmail: null,
+          time: null,
+        },
+      };
+      const result = await borrowCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
 
     //**********************
     //   Books - Store
