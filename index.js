@@ -157,7 +157,7 @@ async function run() {
       const result = await exchangeCollection.deleteOne(query);
       res.send(result);
     });
-    // Get Acceptance Result for exchange
+    // Get Acceptance Result for exchange (Requester)
     app.get("/exchange/result/:mail", async (req, res) => {
       const email = req.params.mail;
       const query = { requesterEmail: email };
@@ -165,12 +165,33 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+    //Rejection Result for exchange
+    app.put("/exchange/cancel/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $unset: {
+          accept: null,
+          date: null,
+          message: null,
+          requesterEmail: null,
+          time: null,
+        },
+      };
+      const result = await exchangeCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
 
     //**********************
     //       Borrow
     //**********************
 
-    //All available books for exchange
+    //All available books for Borrow
     app.get("/borrow", async (req, res) => {
       const query = {};
       const cursor = borrowCollection.find(query);
@@ -227,7 +248,7 @@ async function run() {
       );
       res.send(result);
     });
-    //Acceptance Result for exchange
+    //Acceptance Result for borrow
     app.put("/borrow/accept/:id", async (req, res) => {
       const id = req.params.id;
       const requester = req.body;
@@ -281,7 +302,7 @@ async function run() {
       const result = await borrowCollection.deleteOne(query);
       res.send(result);
     });
-    // Get Acceptance Result for exchange
+    // Get Acceptance Result for borrow (Requester)
     app.get("/borrow/result/:mail", async (req, res) => {
       const email = req.params.mail;
       const query = { requesterEmail: email };
