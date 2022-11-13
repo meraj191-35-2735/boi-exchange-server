@@ -113,7 +113,7 @@ async function run() {
         $set: {
           requesterEmail: requester.requesterEmail,
           message: requester.message,
-          dateAndTime: requester.dateAndTime,
+          dateAndTime: requester?.dateAndTime,
           accept: true,
         },
         $unset: {
