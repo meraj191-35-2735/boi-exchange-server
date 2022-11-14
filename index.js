@@ -355,10 +355,10 @@ async function run() {
       const books = await bookCollection.find({}).toArray();
       let filteredBooks = [];
       books.filter((book) => {
-        const low = book.name.toLowerCase();
+        const lowerCaseName = book.name.toLowerCase();
         for (key in filters) {
           const filterName = filters[key].toLowerCase();
-          if (low.includes(filterName)) {
+          if (lowerCaseName.includes(filterName)) {
             filteredBooks.push(book);
           }
         }
