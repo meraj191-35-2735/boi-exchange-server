@@ -349,6 +349,22 @@ async function run() {
       const result = await bookCollection.findOne(query);
       res.send(result);
     });
+    //Get Search Result
+    app.get("/book", async (req, res) => {
+      const filters = req.query;
+      const books = await bookCollection.find({}).toArray();
+      let filteredBooks = [];
+      books.filter((book) => {
+        const low = book.name.toLowerCase();
+        for (key in filters) {
+          const filterName = filters[key].toLowerCase();
+          if (low.includes(filterName)) {
+            filteredBooks.push(book);
+          }
+        }
+      });
+      res.send(filteredBooks);
+    });
     // Delete specific book
     app.delete("/book/:id", async (req, res) => {
       const id = req.params.id;
