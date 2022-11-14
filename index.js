@@ -7,6 +7,9 @@ const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const { query, response } = require("express");
 require("dotenv").config();
+
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json());
@@ -38,9 +41,23 @@ async function run() {
   try {
     await client.connect();
     const bookCollection = client.db("boi_exchange").collection("books");
+    const orderCollection = client.db("boi_exchange").collection("orders");
     const userCollection = client.db("boi_exchange").collection("users");
     const exchangeCollection = client.db("boi_exchange").collection("exchange");
     const borrowCollection = client.db("boi_exchange").collection("borrow");
+
+    //Payment
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+      const service = req.body;
+      const price = service.price;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({ clientSecret: paymentIntent.client_secret });
+    });
 
     //**********************
     //       Exchange
@@ -384,6 +401,66 @@ async function run() {
       };
       const result = await bookCollection.insertOne(query);
       res.send(result);
+    });
+
+    //**********************
+    //      Orders
+    //**********************
+    // Get All Orders
+    app.get("/order", async (req, res) => {
+      const query = {};
+      const cursor = orderCollection.find(query);
+      const orders = await cursor.toArray();
+      res.send(orders);
+    });
+    //Post Order by Submitting form
+    app.post("/order", verifyJWT, async (req, res) => {
+      const order = req.body;
+      const query = {
+        name: order.name,
+        email: order.email,
+        phone: order.phone,
+        address: order.address,
+        bookID: order.bookID,
+        bookName: order.bookName,
+        price: order.price,
+      };
+      const result = await orderCollection.insertOne(query);
+      res.send(result);
+    });
+    //My Ordered Books
+    app.get("/order/:mail", async (req, res) => {
+      const email = req.params.mail;
+      const query = { email: email };
+      const cursor = orderCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    // Get specific order for payment
+    app.get("/orders/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await orderCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/orders/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const payment = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId,
+        },
+      };
+
+      // const result = await paymentCollection.insertOne(payment);
+      const updatedBooking = await bookingCollection.updateOne(
+        filter,
+        updatedDoc
+      );
+      res.send(updatedBooking);
     });
 
     //************************
