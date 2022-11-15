@@ -367,6 +367,22 @@ async function run() {
       });
       res.send(filteredBooks);
     });
+    //Get Category Wise Result
+    app.get("/book/category/:category", async (req, res) => {
+      const category = req.params.category;
+      const query = { category: category };
+      const cursor = bookCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    //Get Writer Wise Result
+    app.get("/book/writer/:writer", async (req, res) => {
+      const writer = req.params.writer;
+      const query = { writter: writer };
+      const cursor = bookCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
     // Delete specific book
     app.delete("/book/:id", async (req, res) => {
       const id = req.params.id;
